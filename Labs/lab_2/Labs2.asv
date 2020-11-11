@@ -1,6 +1,13 @@
 clear all;
 clc;
 
+% tau = 10;
+
+% W = tf(1, [tau 1]);
+% W_2 = tf(1, [tau 1 1]);
+
+% ltiview(W, W_2);
+
 % for W_1
 k_1 = 8;
 
@@ -13,7 +20,7 @@ T_31 = 2;
 zetta_31 = 0.75;
 T_32 = 3;
 zetta_32 = 0.5;
-% -------------------------------------------------------------------------
+
 % for W_4
 k_4 = 8;
 
@@ -45,28 +52,22 @@ W_closewloop = feedback(W_openloop, 1, -1);
 % build closeloop system
 W_close_error_loops = feedback(1, W_openloop, -1);
 
-% -------------------- Search root and pole for transfer function ---------
+% -------------------- Search root and pole -------------------------------
 
-pole_root(W_openloop);
+[p, z] = pzmap(W_openloop);
+disp("Roots for openloop system:");
+disp(z);
+disp("Poles: ");
+disp(p);
 
-pole_root(W_closewloop);
+[p, z] = pzmap(W_closewloop);
+disp("Roots for closeloop system:");
+disp(z);
+disp("Poles: ");
+disp(p);
 
-pole_root(W_close_error_loops);
-
-% Timing characteristic; ËÀ×Õ, ËÔ×Õ (bode); Nyquist; 
-ltiview({'step';'impulse';'bode';'nyquist'}, W_openloop);
-ltiview({'step';'impulse';'bode';'nyquist'}, W_closewloop);
-ltiview({'step';'impulse';'bode';'nyquist'}, W_close_error_loops);
-
-function [] = pole_root(transfer_function)
-    
-    [p, z] = pzmap(transfer_function);
-    disp("Roots for close error loop: ");
-    disp(z);
-    disp("Poles for close error loop: ");
-    disp(p);
-end
-
-
-
-
+[p, z] = pzmap(W_close_error_loops);
+disp("Roots for close error loop: ");
+disp(z);
+disp("Poles for close error loop: ");
+disp(p);

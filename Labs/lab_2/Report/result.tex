@@ -1,0 +1,161 @@
+%%  A report on laboratory work 2.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[12pt,a4paper]{article}
+
+%%  Стандартные языковые команды
+\usepackage[cp1251]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{floatrow}
+
+%%  Подключение стилевого файла отчета
+\usepackage{kprj}
+
+%%   Подключение пакета управления гиперссылками (только для pdftex)
+\ifpdftex
+   \usepackage[unicode=true]{hyperref}
+   \hypersetup{pdfpagemode=UseNone, pdfstartview = FitR 0 0 200 1000}
+   \BlackColorLinks
+\fi
+
+%%%  Для подключения рисунков (разные форматы при разном компилировании)
+\ifpdftex
+  \DeclareGraphicsExtensions{.pdf}
+\else
+  \DeclareGraphicsExtensions{.eps}
+\fi
+
+
+\LabWork                      %   тип документа -- лабораторная работа
+\LabWorkNo{2}                 %   номер лабораторной работы
+\variant{4}                   %   вариант лабораторной
+
+
+%%%  Данные для оформления
+
+\author{Д.Д.~Девяткин}                     %   автор
+\workyear{2020}                         %   год выполнения работы
+\title{Передаточные функции в Control System Toolbox и Simulink}   %  название
+\discipline{Прикладные задачи теории управления}              %  учебная дисциплина
+\group{ФН12-71Б}                          %   группа
+\faculty{Фундаментальные науки}         %   Факультет
+\chair{Математическое моделирование}    %   кафедра
+\chief{В.А.~Панкратов}                     %   Руководитель работы
+
+\equationnumbering{section}             %   если нумерация формул в пределах раздела (иначе единая нумерация)
+%\figurenumbering{section}              %   (аналогично для рисунков)
+
+\begin{document}
+
+%%%   Формирование титульного листа
+\maketitle
+	
+
+\section-{Постановка задачи и исходные данные}
+1. Передаточные функции звеньев имеют вид:\\
+\begin{center}
+$W_1(s) = \dfrac{k_1}{s}, \,\,\, W_2(s) = \dfrac{\tau_2 s + 1}{T_2 s - 1}, \,\,\, W_3(s) = \dfrac{T^2_{31}s^2 + 2\zeta_{31}T_{31}s + 1}{T^2_{32}s^2 + 2\zeta_{32}T_{32}s + 1}, \,\,\, W_4(s) = k_4.$
+\end{center}
+
+\begin{minipage}[h]{1\linewidth}
+\center{\includegraphics[width=10cm]{system.png}}
+\end{minipage}
+Числовые значения параметров  $k_1 = 8$, $\tau_2=3.0$, $T_2=2.0$,  $T_{31} = 2.0$, $\zeta_{31} = 0.75$, $T_{32} = 3.0$, $\zeta_{31} = 0.50$, $k_4=8.0$.\\
+
+Для системы, изображенной на блок-схеме: \\
+1) Получить разомкнутую, замкнутую и замкнутую по ошибке передаточные функции, используя Control System Toolbox; \\
+2) Построить с помощью Simulink; \\
+3) Используя Control System Toolbox и Simulink, найти нули и полюсы передаточной функции; \\
+4) С помощью Control System Toolbox и Simulink построить логарифмические амлитудную частотную и фазовую частотную характеристики, временные характеристики, диаграмму Найквиста;\\
+5) С помощью критерия Найквиста в различных формулировках исследовать систему на устойчивость, обосновать результат;; \\
+6) Предоставить отчет.
+
+\section-{Реализация}
+
+Сначала задаем передаточные функции $W_1(s), W_2(s), W_3(s), W_4(s)$ с помощью MATLAB-функции $tf$. На следующем шаге строим разомкнутую, замкнутую и замкнутую по ошибке передаточные функции. Разомкнутая передачточная функция это $W_{YR}$, для её построения перемножаем $W_1(s)$ и $W_2(s)$, так как они имеют последовательное соединение, дальше есть контур с обратной связи, чтобы его исключить используем MATLAB-функцию $feedback$ и перемножаем с предыдущем результом. Получаем 
+\begin{center}
+$W_{YR} = \dfrac{96 s^3 + 104 s^2 + 48 s + 8}{  82 s^4 + 13 s^3 - 9 s^2 - 9 s}$
+\end{center}
+
+Для построения замкнутой передаточной функции (ПФ) используется уже найденный результат для разомкнутой системы. По схеме видно, что снова получается контур с обратной связью, поэтому используем функцию $feedback$, в качестве обратной свзяи буте ПФ $W_{fb} = 1$.  
+\begin{center}
+$W_{YE} = \dfrac{96 s^3 + 104 s^2 + 48 s + 8}{82 s^4 + 109 s^3 + 95 s^2 + 39 s + 8}$
+\end{center}
+
+Для построения замкнутой по ошибке ПФ испульзуем аналогичный принцип, но в качестве обратной свзяи буте ПФ $W_{fb} = W_{YR}$.  
+\begin{center}
+$W_{ER} = \dfrac{82 s^4 + 13 s^3 - 9 s^2 - 9 s}{82 s^4 + 109 s^3 + 95 s^2 + 39 s + 8}$
+\end{center}
+Используя Control System Toolbox, найдем нули и полюсы с помощью функции $pzmap$.\\ Нули и полюсы для ПФ $W_{YR}$:
+\begin{align*}
+&z_1 = -0.3750 + 0.3307i && p_1 = 0.0\\
+&z_2 = -0.3750 - 0.3307i && p_2 = 0.5 \\
+&z_3 = -0.3333 && p_3 = -0.3293 + 0.3333\\
+&&&p_4 = -0.3293 - 0.3333i\\
+\end{align*}
+
+Нули для ПФ $W_{YE}$:
+\begin{align*}
+&z_1 = -0.3750 + 0.3307i && p_1 =   -0.3335 + 0.6504i\\
+&z_2 = -0.3750 - 0.3307i && p_2 =  -0.3335 - 0.6504i \\
+&z_3 = -0.3333 && p_3 = -0.3312 + 0.2701i\\
+&&&p_4 = -0.3312 - 0.2701i\\
+\end{align*}
+
+Нули для ПФ $W_{ER}$:
+\begin{align*}
+&z_1 = 0 && p_1 = -0.3335 + 0.6504i\\
+&z_2 = 0.5 && p_2 = -0.3335 - 0.6504i \\
+&z_3 = -0.3293 + 0.3333i && p_3 = -0.3312 + 0.2701i\\
+&z_4 = -0.3293 - 0.3333i &&p_4 = -0.3312 - 0.2701i\\
+\end{align*}
+
+Построим систему в Simulink. Для этого использует следующие блоки: sumator, Transfer Fnc, OutPort и InPort.
+\begin{figure}[h!]
+ \centerline{\includegraphics[scale=0.67]{system_sim.png}}
+ \vskip2mm
+ \caption{Система, построенная в Simulink.}\label{fig1}
+\end{figure} 
+
+Дальше найдем нули и полюсы передаточной функции. При построении в Simulink получаем следующую визуализацию. 
+\begin{figure}[h]
+\begin{minipage}[h]{0.49\linewidth}
+\center{\includegraphics[width=9cm]{open_loop_zp.png}}
+\caption{Нули и полюсы для $W_{YR}$ и $W_{YE}$.}\label{fig1}
+\end{minipage}
+\hfill
+\begin{minipage}[h]{0.49\linewidth}
+\center{\includegraphics[width=9cm]{close_loop_zp.png}}
+\end{minipage}
+\end{figure}
+\begin{figure}[h!]
+\begin{minipage}[h!]{\linewidth}
+\center{\includegraphics[width=9cm]{close_loop_error.png}}
+\caption{Нули и полюсы для $W_{ER}$.}\label{fig1}
+\end{minipage}
+\end{figure} 
+
+
+С помощью Control System Toolbox построим логарифмические амлитудную частотную и фазовую частотную характеристики, временные характеристики, диаграмму Найквиста. Реализуем это с помощью MATLAB-функции $ltiview$, где будут указаны параметры: step, impulse, bode, nyquist и сама ПФ. 
+Получаем следующую визуализацию.
+\begin{figure}[h!]
+ \centerline{\includegraphics[scale=0.55]{char_open_loop.png}}
+ \vskip2mm
+ \caption{Характеристики размкнутой системы $W_{YR}$.}\label{fig1}
+\end{figure}
+
+\begin{figure}[h!]
+ \centerline{\includegraphics[scale=0.55]{char_close_loop.png}}
+ \vskip2mm
+ \caption{Характеристики замкнутой системы $W_{YE}$.}\label{fig1}
+\end{figure}
+
+\begin{figure}[h!]
+ \centerline{\includegraphics[scale=0.55]{char_close_loop_error.png}}
+ \vskip2mm
+ \caption{Характеристики замкнутой системы по ошибке $W_{ER}$.}\label{fig1}
+\end{figure}
+\newpage
+Найдем аналогичные характеристики в Simulink.
+
+\end{document}
